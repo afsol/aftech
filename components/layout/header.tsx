@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Search, ShoppingCart, Phone, Mail,} from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Search, ShoppingCart, Phone, Mail } from "lucide-react";
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
-import Image from "next/image"
+import Image from "next/image";
 
 export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   const navigationItems = [
     { name: "Home", href: "/" },
     { name: "Services", href: "/services" },
     { name: "Products", href: "products?page=1&per_page=12" },
     { name: "Contact", href: "/contact" },
-  ]
+  ];
 
   return (
     <>
@@ -44,7 +44,6 @@ export default function Header() {
               <Link href="#" className="hover:text-blue-300">
                 <FaInstagram className="bg-white rounded p-1 text-gray-600 hover:text-pink-500 h-5 w-5" />
               </Link>
-              
             </div>
           </div>
         </div>
@@ -56,15 +55,17 @@ export default function Header() {
             <Link href="/" className="flex items-center space-x-3">
               <div className="rounded-lg">
                 <Image
-                  src="/af-logo.png"  // <-- your image path here
+                  src="/af-logo-12.png" // <-- your image path here
                   alt="AF Technologies Logo"
-                  width={80}  // same as `h-8` (2rem)
+                  width={80} // same as `h-8` (2rem)
                   height={80}
                   className="object-contain"
                 />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-blue-900">TECHNOLOGIES</h1>
+                <h1 className="text-xl font-bold text-blue-900">
+                  TECHNOLOGIES
+                </h1>
                 <p className="text-sm text-gray-600">SECURITY SOLUTIONS</p>
               </div>
             </Link>
@@ -88,9 +89,20 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="hidden md:flex">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
-              <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">Get Quote</Button>
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleMobileMenu}>
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
+                Get Quote
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={toggleMobileMenu}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
             </div>
           </div>
@@ -111,7 +123,9 @@ export default function Header() {
                     </Link>
                   ))}
                   <div className="pt-4 space-y-3">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">Get Quote</Button>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      Get Quote
+                    </Button>
                     <div className="flex space-x-2">
                       <Button variant="ghost" size="icon" className="flex-1">
                         <Search className="h-5 w-5" />
@@ -128,5 +142,5 @@ export default function Header() {
         </div>
       </header>
     </>
-  )
+  );
 }
