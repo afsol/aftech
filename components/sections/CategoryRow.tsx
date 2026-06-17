@@ -82,10 +82,10 @@ export default function CategoryRow({ id }) {
   if (!id) return;
   
   setLoading(true);
-  console.log(`📡 Fetching category ID: ${id} from: ${process.env.NEXT_PUBLIC_API_URL}/products/categories/${id}`);
+  console.log(`📡 Fetching category ID: ${id} from: ${process.env.NEXT_PUBLIC_API_URL}/products/brands/${id}`);
 
   axios
-    .get(`${process.env.NEXT_PUBLIC_API_URL}/products/categories/${id}`, {
+    .get(`${process.env.NEXT_PUBLIC_API_URL}/products/brands/${id}`, {
       headers: { "X-API-KEY": process.env.NEXT_PUBLIC_X_API_KEY },
     })
     .then((res) => {
@@ -198,7 +198,7 @@ export default function CategoryRow({ id }) {
     
 //     setLoading(true);
 //     axios
-//       .get(`${process.env.NEXT_PUBLIC_API_URL}/products/categories/${id}`, {
+//       .get(`${process.env.NEXT_PUBLIC_API_URL}/products/brands/${id}`, {
 //         headers: { "X-API-KEY": process.env.NEXT_PUBLIC_X_API_KEY },
 //       })
 //       .then((res) => {

@@ -33,6 +33,7 @@ import Testimonials from "@/components/sections/testimonial-section"
 import CategoryRow from "@/components/sections/CategoryRow"
 import FeaturedCategories from "@/components/sections/FeaturedCategories"
 import CTA from "@/components/sections/cta"
+import ServicesSection from "@/components/sections/HomeServices"
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -64,7 +65,10 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+            <ServicesSection />
+
+
+          {/* <div className="grid md:grid-cols-2 gap-8">
             <Card className="group hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-600">
               <CardHeader>
                 <div className="flex items-center space-x-4">
@@ -100,7 +104,6 @@ export default function HomePage() {
                     <span>24/7 Remote Monitoring</span>
                   </li>
                 </ul>
-                {/* <Button className="w-full bg-blue-600 hover:bg-blue-700">Learn More</Button> */}
               </CardContent>
             </Card>
 
@@ -139,10 +142,9 @@ export default function HomePage() {
                     <span>Maintenance & Support</span>
                   </li>
                 </ul>
-                {/* <Button className="w-full bg-orange-500 hover:bg-orange-600">Learn More</Button> */}
               </CardContent>
             </Card>
-          </div>
+          </div> */}
 
           <div className="text-center mt-5">
             <Button asChild className="w-30 mt-5 bg-blue-600 hover:bg-blue-700">
@@ -196,11 +198,13 @@ export default function HomePage() {
           </div>
 
           {/* CCTV Products */}
-          <CategoryRow id={8} />
+          <CategoryRow id={1} />
+          <CategoryRow id={2} />
           <CategoryRow id={3} />
           <CategoryRow id={4} />
           <CategoryRow id={5} />
-          <CategoryRow id={2} />
+          <CategoryRow id={6} />
+          <CategoryRow id={18} />
           {/* Solar Products */}
           
         </div>
