@@ -89,9 +89,11 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="hidden md:flex">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
-              <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
-                Get Quote
-              </Button>
+              <Link href="/quote" passHref>
+                <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
+                  Get Quote
+                </Button>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"

@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "@/utils/axios";
-import { ShoppingCart, Eye, Tag, Hash, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, Eye, Tag, Hash, ChevronLeft, ChevronRight, PackageOpen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Interfaces & Structural Model Types ───
 type Product = {
   id: number;
   name: string;
@@ -18,352 +20,322 @@ type Product = {
   short_description: string;
   tags: string;
   price: string;
-  created_at: string;
-  updated_at: string;
   image_url: string;
   gallery_urls: string[];
 };
 
-type Tag = {
-  value: string;
-};
+interface GridProps {
+  viewMode: "grid" | "list";
+}
 
-type PaginatedResponse<T> = {
-  data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-};
-
-const PER_PAGE_OPTIONS = [12, 24, 48];
-
-// ─── Inject global CSS once on client only (avoids SSR hydration mismatch) ───
+// ─── Inject Keyframe Shimmer Animations safely on Mount ───
 function useGlobalStyles() {
   useEffect(() => {
-    const id = "products-grid-styles";
+    const id = "products-grid-view-styles";
     if (document.getElementById(id)) return;
     const el = document.createElement("style");
     el.id = id;
     el.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap');
-
-      @keyframes shimmer {
-        0%   { background-position: -600px 0; }
-        100% { background-position:  600px 0; }
+      @keyframes gridShimmer {
+        0% { background-position: -600px 0; }
+        100% { background-position: 600px 0; }
       }
-
-      @keyframes cardIn {
-        from { opacity: 0; transform: translateY(14px); }
-        to   { opacity: 1; transform: translateY(0); }
+      .shimmer-bg {
+        background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 25%);
+        background-size: 600px 100%;
+        animation: gridShimmer 1.4s infinite linear;
       }
-
-      .card-enter { animation: cardIn 0.38s ease both; }
+      .card-animate {
+        animation: slideCardUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      @keyframes slideCardUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     `;
     document.head.appendChild(el);
     return () => { document.getElementById(id)?.remove(); };
   }, []);
 }
 
-// ─── Skeleton Card ────────────────────────────────────────────────────────────
-function SkeletonCard() {
-  return (
-    <div style={s.skeletonCard}>
-      <div style={{ ...s.skeletonImg, ...s.shimmer }} />
-      <div style={s.skeletonBody}>
-        <div style={{ ...s.skeletonLine, width: "75%", ...s.shimmer }} />
-        <div style={{ ...s.skeletonLine, width: "45%", ...s.shimmer }} />
-        <div style={{ ...s.skeletonLine, width: "60%", ...s.shimmer }} />
-      </div>
-    </div>
-  );
-}
-
-// ─── Product Card ─────────────────────────────────────────────────────────────
-function ProductCard({ product, onView }: { product: Product; onView: (id: number) => void }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [adding, setAdding] = useState(false);
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAdding(true);
-    setTimeout(() => setAdding(false), 1200);
-  };
-
-  return (
-    <article
-      style={{
-        ...s.productCard,
-        transform: hovered ? "translateY(-5px)" : "translateY(0)",
-        boxShadow: hovered
-          ? "0 8px 32px rgba(0,0,0,0.10)"
-          : "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div style={s.imageWrap}>
-        {!imgLoaded && <div style={{ ...s.imgSkeleton, ...s.shimmer }} />}
-        <img
-          src={product.image_url || "/placeholder.svg"}
-          alt={product.name}
-          style={{
-            ...s.cardImg,
-            opacity: imgLoaded ? 1 : 0,
-            transform: hovered ? "scale(1.04)" : "scale(1)",
-          }}
-          onLoad={() => setImgLoaded(true)}
-        />
-        <div style={{ ...s.overlay, opacity: hovered ? 1 : 0 }}>
-          <button
-            style={{ ...s.viewBtn, transform: hovered ? "translateY(0)" : "translateY(8px)" }}
-            onClick={() => onView(product.id)}
-          >
-            <Eye size={15} />
-            <span>Quick View</span>
-          </button>
-        </div>
-        <span style={s.categoryChip}>
-          <Tag size={10} />
-          {product.product_category_id}
-        </span>
-      </div>
-
-      <div style={s.cardBody}>
-        <h2 style={s.cardTitle}>{product.name}</h2>
-        <div style={s.cardMeta}>
-          <span style={s.skuBadge}>
-            <Hash size={10} />
-            {product.sku || "—"}
-          </span>
-        </div>
-        <div style={s.cardFooter}>
-          <span style={s.price}>PKR {product.price}</span>
-          <button
-            style={{ ...s.cartBtn, background: adding ? "#5a7c4a" : "#1a1713" }}
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart size={14} />
-            <span style={{ fontSize: "0.72rem" }}>{adding ? "Added!" : "Add"}</span>
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// ─── Pagination ───────────────────────────────────────────────────────────────
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  const getPageNumbers = (): (number | "...")[] => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    const pages: (number | "...")[] = [1];
-    if (currentPage > 3) pages.push("...");
-    for (
-      let i = Math.max(2, currentPage - 1);
-      i <= Math.min(totalPages - 1, currentPage + 1);
-      i++
-    ) pages.push(i);
-    if (currentPage < totalPages - 2) pages.push("...");
-    pages.push(totalPages);
-    return pages;
-  };
-
-  return (
-    <div style={s.pagination}>
-      <button
-        style={{ ...s.pageNavBtn, opacity: currentPage === 1 ? 0.35 : 1, cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
-        onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft size={15} />
-      </button>
-
-      {getPageNumbers().map((p, i) =>
-        p === "..." ? (
-          <span key={`ellipsis-${i}`} style={s.pageEllipsis}>…</span>
-        ) : (
-          <button
-            key={p}
-            style={{ ...s.pageNumBtn, ...(p === currentPage ? s.pageNumBtnActive : {}) }}
-            onClick={() => onPageChange(p as number)}
-          >
-            {p}
-          </button>
-        )
-      )}
-
-      <button
-        style={{ ...s.pageNavBtn, opacity: currentPage === totalPages ? 0.35 : 1, cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
-        onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronRight size={15} />
-      </button>
-    </div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function ProductsGrid() {
-  useGlobalStyles(); // ← client-only, no SSR mismatch
+export default function ProductsGrid({ viewMode }: GridProps) {
+  useGlobalStyles();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage, setPerPage] = useState(12);
   const [loading, setLoading] = useState(false);
+  
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const fetchProducts = (page = 1, limit = perPage) => {
+  // Unified Request Dispatcher Pipeline Loop 
+  useEffect(() => {
     setLoading(true);
-
-    const queryString = searchParams.toString();
     
+    // Safety check: ensure tracking pagination sync attributes are present on runtime query parameters
+    const query = new URLSearchParams(searchParams.toString());
+    if (!query.has("page")) query.set("page", String(currentPage));
+    query.set("per_page", "12"); // Constant fixed array capacity layout count constraint
+
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/products?${queryString}`, {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/products?${query.toString()}`, {
         headers: { "X-API-KEY": process.env.NEXT_PUBLIC_X_API_KEY },
       })
       .then((res) => {
-        const paginated = res.data.data;
-        setProducts(paginated.data);
-        setTotalPages(paginated.last_page || 1);
-        setCurrentPage(paginated.current_page);
-        setTotal(paginated.total || 0);
+        if (res.data && res.data.success) {
+          const paginated = res.data.data;
+          setProducts(paginated.data || []);
+          setTotalPages(paginated.last_page || 1);
+          setCurrentPage(paginated.current_page || 1);
+          setTotal(paginated.total || 0);
+        }
       })
-      .catch((err) => console.error("API error:", err))
+      .catch((err) => console.error("Axios API breakdown on data resolution hook:", err))
       .finally(() => setLoading(false));
+  }, [searchParams, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    const query = new URLSearchParams(searchParams.toString());
+    query.set("page", String(newPage));
+    router.push(`/products?${query.toString()}`);
   };
 
-  useEffect(() => {
-    router.replace(`/products?page=${currentPage}&per_page=${perPage}`);
-  }, [currentPage, perPage]);
+  // Compile Pagination Page Nodes array allocation matrix
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "...")[] = [1];
+    if (currentPage > 3) pages.push("...");
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+    return pages;
+  }, [currentPage, totalPages]);
 
-  useEffect(() => {
-    fetchProducts(currentPage, perPage);
-  }, [currentPage, perPage]);
+  // Loading skeleton block matrix wrapper callback
+  if (loading) {
+    return (
+      <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className={`bg-white border border-slate-100 rounded-2xl p-4 ${viewMode === "list" ? "flex flex-col sm:flex-row gap-5" : ""}`}>
+            <div className={`shimmer-bg rounded-xl bg-slate-100 ${viewMode === "list" ? "w-full sm:w-44 h-40 sm:h-32 flex-shrink-0" : "aspect-square w-full mb-4"}`} />
+            <div className="flex-1 space-y-3 py-2">
+              <div className="h-4 bg-slate-100 shimmer-bg rounded w-3/4" />
+              <div className="h-3 bg-slate-100 shimmer-bg rounded w-1/2" />
+              <div className="h-5 bg-slate-100 shimmer-bg rounded w-1/4 mt-4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-
-useEffect(() => {
-  fetchProducts();
-}, [searchParams]);
-  const handlePerPageChange = (value: number) => {
-    setPerPage(value);
-    setCurrentPage(1);
-
-    router.push(`/products?page=1&per_page=${value}`);
-  };
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 text-center border border-dashed border-slate-200 bg-white rounded-3xl">
+        <div className="h-12 w-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center mb-4 text-slate-400">
+          <PackageOpen className="h-6 w-6" />
+        </div>
+        <h3 className="font-serif text-lg font-semibold text-slate-800">No Inventory Found</h3>
+        <p className="text-sm text-slate-400 max-w-sm mt-1">We couldn't track matching items. Refine your parameter categories list or check back later.</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={s.root}>
-      {/* ── Toolbar ── */}
-      <div style={s.toolbar}>
-        <div>
-          {!loading && total > 0 && (
-            <p style={s.totalCount}>{total} products total</p>
-          )}
-        </div>
+    <div className="space-y-8">
+      
+      {/* Dynamic Structural Grid vs List presentation frame engine */}
+      <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
+        {products.map((product, index) => (
+          <div 
+            key={product.id} 
+            className="card-animate" 
+            style={{ animationDelay: `${index * 0.03}s` }}
+          >
+            <ProductCardItem product={product} viewMode={viewMode} router={router} />
+          </div>
+        ))}
+      </div>
 
-        <div style={s.perPageWrap}>
-          <span style={s.perPageLabel}>Show</span>
-          <div style={s.perPageBtns}>
-            {PER_PAGE_OPTIONS.map((n) => (
+      {/* Pagination Footnote Navigation row toolbar layout strip */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+          <p className="text-xs font-medium text-slate-400 tracking-wide uppercase">
+            Viewing total {total} solutions array entries
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {pageNumbers.map((num, idx) => num === "..." ? (
+              <span key={`ellipsis-${idx}`} className="px-2 text-slate-400 tracking-widest text-sm">...</span>
+            ) : (
               <button
-                key={n}
-                style={{ ...s.perPageBtn, ...(perPage === n ? s.perPageBtnActive : {}) }}
-                onClick={() => handlePerPageChange(n)}
+                key={num}
+                onClick={() => handlePageChange(num as number)}
+                className={`h-9 min-w-[36px] px-2 text-xs font-semibold rounded-xl transition-all ${currentPage === num ? "bg-slate-900 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}
               >
-                {n}
+                {num}
               </button>
             ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
-          <span style={s.perPageLabel}>per page</span>
-        </div>
-      </div>
-
-      {/* ── Grid ── */}
-      <div style={s.grid}>
-        {loading ? (
-          Array.from({ length: Math.min(perPage, 9) }).map((_, i) => <SkeletonCard key={i} />)
-        ) : products.length > 0 ? (
-          products.map((product, i) => (
-            <div key={product.id} className="card-enter" style={{ animationDelay: `${i * 0.04}s` }}>
-              <ProductCard product={product} onView={(id) => router.push(`/products/${id}`)} />
-            </div>
-          ))
-        ) : (
-          <div style={s.emptyState}>
-            <div style={s.emptyIcon}><ShoppingCart size={22} color="#9e9789" /></div>
-            <p style={s.emptyTitle}>No products found</p>
-            <p style={s.emptySub}>Try adjusting your filters or check back later.</p>
-          </div>
-        )}
-      </div>
-
-      {/* ── Pagination ── */}
-      {!loading && totalPages > 1 && (
-        <div style={s.paginationRow}>
-          <span style={s.pageInfo}>
-            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
-          </span>
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       )}
     </div>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const s: Record<string, React.CSSProperties> = {
-  root: { fontFamily: "'DM Sans', sans-serif", background: "#f7f5f0", minHeight: "100vh", padding: "40px 32px" },
-  toolbar: { display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px", borderBottom: "1.5px solid #d9d4c7", paddingBottom: "20px" },
-  title: { fontFamily: "'Fraunces', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 500, color: "#1a1713", letterSpacing: "-0.02em", lineHeight: 1, marginBottom: "6px" },
-  titleEm: { fontStyle: "italic", color: "#8b6f47" },
-  totalCount: { fontSize: "0.78rem", color: "#9e9789", fontWeight: 300, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: "4px" },
-  perPageWrap: { display: "flex", alignItems: "center", gap: "10px" },
-  perPageLabel: { fontSize: "0.78rem", color: "#9e9789", fontWeight: 400, letterSpacing: "0.04em", textTransform: "uppercase" },
-  perPageBtns: { display: "flex", gap: "4px", background: "#ede9e0", borderRadius: "50px", padding: "3px" },
-  perPageBtn: { padding: "5px 13px", border: "none", borderRadius: "50px", background: "transparent", color: "#5c5243", fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", fontWeight: 500, cursor: "pointer", transition: "background 0.18s, color 0.18s" },
-  perPageBtnActive: { background: "#1a1713", color: "#fff" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "22px", marginBottom: "40px" },
-  productCard: { background: "#fff", borderRadius: "16px", overflow: "hidden", transition: "transform 0.25s ease, box-shadow 0.25s ease", cursor: "pointer", display: "flex", flexDirection: "column", height: "100%" },
-  imageWrap: { position: "relative", aspectRatio: "1", background: "#f0ece4", overflow: "hidden" },
-  cardImg: { width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.4s ease, opacity 0.3s ease" },
-  imgSkeleton: { position: "absolute", inset: 0 },
-  overlay: { position: "absolute", inset: 0, background: "rgba(20,17,12,0.45)", backdropFilter: "blur(2px)", display: "flex", alignItems: "center", justifyContent: "center", transition: "opacity 0.3s ease" },
-  viewBtn: { display: "flex", alignItems: "center", gap: "7px", padding: "10px 20px", background: "#fff", color: "#1a1713", border: "none", borderRadius: "50px", fontFamily: "'DM Sans', sans-serif", fontSize: "0.8rem", fontWeight: 500, cursor: "pointer", transition: "transform 0.3s ease" },
-  categoryChip: { position: "absolute", top: "12px", left: "12px", display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", borderRadius: "50px", fontSize: "0.68rem", fontWeight: 500, color: "#5c5243", letterSpacing: "0.04em", textTransform: "uppercase" },
-  cardBody: { padding: "18px 18px 16px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 },
-  cardTitle: { fontFamily: "'Fraunces', serif", fontSize: "1.05rem", fontWeight: 500, color: "#1a1713", letterSpacing: "-0.01em", lineHeight: 1.3 },
-  cardMeta: { display: "flex", alignItems: "center" },
-  skuBadge: { display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.7rem", color: "#9e9789", fontWeight: 400, letterSpacing: "0.05em", fontFamily: "monospace" },
-  cardFooter: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "12px", borderTop: "1px solid #f0ece4" },
-  price: { fontSize: "1rem", fontWeight: 500, color: "#1a1713", letterSpacing: "-0.01em" },
-  cartBtn: { display: "flex", alignItems: "center", gap: "5px", padding: "7px 14px", color: "#fff", border: "none", borderRadius: "50px", fontFamily: "'DM Sans', sans-serif", fontSize: "0.75rem", fontWeight: 500, cursor: "pointer", transition: "background 0.2s" },
-  skeletonCard: { background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" },
-  skeletonImg: { height: "220px" },
-  skeletonBody: { padding: "18px", display: "flex", flexDirection: "column", gap: "10px" },
-  skeletonLine: { height: "12px", borderRadius: "6px" },
-  shimmer: { background: "linear-gradient(90deg, #ede9e0 25%, #e0dbd1 50%, #ede9e0 75%)", backgroundSize: "600px 100%", animation: "shimmer 1.4s infinite linear" },
-  emptyState: { gridColumn: "1 / -1", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", padding: "80px 20px" },
-  emptyIcon: { width: "56px", height: "56px", border: "1.5px solid #d9d4c7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontFamily: "'Fraunces', serif", fontSize: "1.2rem", color: "#5c5243", fontWeight: 500 },
-  emptySub: { fontSize: "0.82rem", color: "#9e9789", fontWeight: 300 },
-  paginationRow: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" },
-  pageInfo: { fontSize: "0.8rem", color: "#9e9789", fontWeight: 300, letterSpacing: "0.03em" },
-  pagination: { display: "flex", alignItems: "center", gap: "4px" },
-  pageNavBtn: { width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", background: "#ede9e0", border: "none", borderRadius: "50%", color: "#1a1713", cursor: "pointer", transition: "background 0.18s" },
-  pageNumBtn: { minWidth: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "1.5px solid #d9d4c7", borderRadius: "8px", color: "#5c5243", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", fontWeight: 400, cursor: "pointer", transition: "background 0.18s, color 0.18s, border-color 0.18s", padding: "0 8px" },
-  pageNumBtnActive: { background: "#1a1713", color: "#fff", borderColor: "#1a1713", fontWeight: 600 },
-  pageEllipsis: { width: "28px", textAlign: "center", color: "#9e9789", fontSize: "0.85rem", userSelect: "none" },
-};
+// ─── Sub-Component: Product Card Presenter ───
+function ProductCardItem({ product, viewMode, router }: { product: Product; viewMode: "grid" | "list"; router: any }) {
+  const [imgError, setImgError] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  const triggerAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAdding(true);
+    setTimeout(() => setAdding(false), 1200);
+  };
+
+  const currentImg = imgError || !product.image_url ? "/placeholder.svg" : product.image_url;
+
+  if (viewMode === "list") {
+    return (
+      <article 
+        onClick={() => router.push(`/products/${product.id}`)}
+        className="group flex flex-col sm:flex-row bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer p-4 gap-5"
+      >
+        <div className="relative w-full sm:w-44 h-44 sm:h-36 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
+          <img
+            src={currentImg}
+            alt={product.name}
+            className="w-full height-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+          <span className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-wide border border-slate-100 shadow-xs">
+            <Tag size={10} className="text-slate-400" />
+            {product.product_category_id || "General"}
+          </span>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-between py-1">
+          <div>
+            <h2 className="font-serif text-base font-semibold text-slate-900 group-hover:text-slate-700 transition-colors line-clamp-1">
+              {product.name}
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 mt-1.5">
+              <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-mono">
+                <Hash size={10} /> {product.sku || "N/A"}
+              </span>
+            </div>
+            {product.short_description && (
+              <p className="text-xs text-slate-400 mt-2 line-clamp-2 max-w-xl font-normal leading-relaxed">
+                {product.short_description}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between gap-4 mt-4 sm:mt-0 pt-3 border-t border-slate-50">
+            <span className="text-base font-semibold text-slate-900 tracking-tight">
+              PKR {product.price ? Number(product.price).toLocaleString() : "—"}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 rounded-full p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <Eye size={15} />
+              </Button>
+              {/* <Button
+                size="sm"
+                onClick={triggerAddToCart}
+                className={`h-8 px-4 rounded-xl text-xs font-medium transition-all ${adding ? "bg-emerald-600 hover:bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"}`}
+              >
+                <ShoppingCart size={13} className="mr-1.5" />
+                {adding ? "Added" : "Purchase"}
+              </Button> */}
+              <Link href="/quote" passHref>
+                <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
+                  <ShoppingCart />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  // Fallback Native Grid Render Element Box
+  return (
+    <article 
+      onClick={() => router.push(`/products/${product.id}`)}
+      className="group bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden cursor-pointer"
+    >
+      <div className="relative aspect-square w-full bg-slate-50 overflow-hidden border-b border-slate-50">
+        <img
+          src={currentImg}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={() => setImgError(true)}
+        />
+        
+        <span className="absolute top-3 left-3 flex items-center gap-1 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-full text-[9px] font-bold text-slate-600 uppercase tracking-wider border border-slate-100 shadow-xs">
+          <Tag size={9} className="text-slate-400" />
+          {product.product_category_id || "General"}
+        </span>
+
+        <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-xs">
+          <div className="h-9 w-9 bg-white text-slate-900 rounded-full flex items-center justify-center shadow-md scale-75 group-hover:scale-100 transition-transform duration-300">
+            <Eye size={16} />
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 flex flex-col flex-1 justify-between">
+        <div className="space-y-1">
+          <h2 className="font-serif text-sm font-semibold text-slate-900 group-hover:text-slate-700 transition-colors line-clamp-2 min-h-[40px] leading-snug">
+            {product.name}
+          </h2>
+          <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
+            <Hash size={9} /> {product.sku || "—"}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+          <span className="text-sm font-bold text-slate-900 tracking-tight">
+            PKR {product.price ? Number(product.price).toLocaleString() : "—"}
+          </span>
+          {/* <Button
+            size="sm"
+            onClick={triggerAddToCart}
+            className={`h-8 w-8 rounded-full p-0 transition-all ${adding ? "bg-emerald-600 hover:bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"}`}
+          >
+            <ShoppingCart size={13} />
+          </Button> */}
+          <Link href="/quote" passHref>
+            <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
+              <ShoppingCart />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}

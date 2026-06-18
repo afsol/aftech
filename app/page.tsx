@@ -204,7 +204,7 @@ export default function HomePage() {
           <CategoryRow id={4} />
           <CategoryRow id={5} />
           <CategoryRow id={6} />
-          <CategoryRow id={18} />
+          <CategoryRow id={8} />
           {/* Solar Products */}
           
         </div>
