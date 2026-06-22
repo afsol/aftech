@@ -212,7 +212,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
     setTimeout(() => setAdding(false), 1200);
   };
 
-  const currentImg = imgError || !product.image_url ? "/placeholder.svg" : product.image_url;
+  const currentImg = product.image_url;
 
   if (viewMode === "list") {
     return (
@@ -222,7 +222,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
       >
         <div className="relative w-full sm:w-44 h-44 sm:h-36 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
           <img
-            src={currentImg}
+            src={product.image_url}
             alt={product.name}
             className="w-full height-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImgError(true)}
