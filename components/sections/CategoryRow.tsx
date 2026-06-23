@@ -5,8 +5,9 @@ import axios from "@/utils/axios";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight, Eye, ShoppingBag, Cpu } from "lucide-react";
+import { ChevronRight, Eye, ShoppingBag, Cpu, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const FALLBACK_IMAGE = "https://admin.aftechnologies.pk/assets/adminassests/images/image-not-found.webp";
 
@@ -44,9 +45,14 @@ function ProductCard({ product, onClick }) {
           <Button size="sm" variant="secondary" className="h-10 w-10 p-0 rounded-xl bg-white/90 backdrop-blur-sm shadow-md">
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" className="h-10 w-10 p-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+          <Link href="/quote" passHref onClick={(e) => e.stopPropagation()}>
+            <Button className="h-10 w-10 p-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+              <ShoppingCart size={13} />
+            </Button>
+          </Link>
+          {/* <Button size="sm" className="h-10 w-10 p-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md">
             <ShoppingBag className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       </div>
 

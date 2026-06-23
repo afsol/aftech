@@ -270,9 +270,10 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
                 <ShoppingCart size={13} className="mr-1.5" />
                 {adding ? "Added" : "Purchase"}
               </Button> */}
-              <Link href="/quote" passHref>
-                <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
-                  <ShoppingCart />
+              <Link href="/quote" passHref onClick={(e) => e.stopPropagation()}>
+                <Button className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-medium flex items-center gap-1.5">
+                  <ShoppingCart size={13} />
+                  
                 </Button>
               </Link>
             </div>
@@ -329,9 +330,9 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
           >
             <ShoppingCart size={13} />
           </Button> */}
-          <Link href="/quote" passHref>
-            <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
-              <ShoppingCart />
+          <Link href="/quote" passHref onClick={(e) => e.stopPropagation()}>
+            <Button className="h-8 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-medium flex items-center gap-1.5">
+              <ShoppingCart size={13} />
             </Button>
           </Link>
         </div>
