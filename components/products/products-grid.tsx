@@ -9,6 +9,7 @@ import Link from "next/link";
 // ─── Interfaces & Structural Model Types ───
 type Product = {
   id: number;
+  slug: string;
   name: string;
   brand_id: number | null;
   product_category_id: string;
@@ -217,7 +218,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
   if (viewMode === "list") {
     return (
       <article 
-        onClick={() => router.push(`/products/${product.id}`)}
+        onClick={() => router.push(`/products/${product.slug}`)}
         className="group flex flex-col sm:flex-row bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer p-4 gap-5"
       >
         <div className="relative w-full sm:w-44 h-44 sm:h-36 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
@@ -286,7 +287,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
   // Fallback Native Grid Render Element Box
   return (
     <article 
-      onClick={() => router.push(`/products/${product.id}`)}
+      onClick={() => router.push(`/products/${product.slug}`)}
       className="group bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden cursor-pointer"
     >
       <div className="relative aspect-square w-full bg-slate-50 overflow-hidden border-b border-slate-50">
@@ -312,7 +313,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
       <div className="p-4 flex flex-col flex-1 justify-between">
         <div className="space-y-1">
           <h2 className="font-serif text-sm font-semibold text-slate-900 group-hover:text-slate-700 transition-colors line-clamp-2 min-h-[40px] leading-snug">
-            {product.name}
+            {product.name} 
           </h2>
           <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
             <Hash size={9} /> {product.sku || "—"}

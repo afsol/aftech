@@ -203,7 +203,7 @@ export default function CategoryRow({ id }) {
           <ProductCard
             key={product.id}
             product={product}
-            onClick={() => router.push(`/products/${product.id}`)}
+            onClick={() => router.push(`/products/${product.slug}`)}
           />
         ))}
       </div>

@@ -86,17 +86,18 @@ export default async function ProductPage({ params }: { params: { productId: str
             <div className="mt-10 border-t pt-10 pb-20">
               {/* <h2 className="text-2xl font-bold text-gray-800 mb-6">Specifications</h2> */}
               <div 
-              style={{ 
-                height: 'auto', 
-                maxHeight: 'none', 
-                overflow: 'visible' 
-              }}
-              className={`spec-table-container product-content-${product.id} w-full`} 
-              dangerouslySetInnerHTML={{ __html: product.long_description || "" }}
+                style={{ 
+                  height: 'auto', 
+                  maxHeight: 'none', 
+                  overflow: 'auto' // ✅ Updated from 'visible' to 'auto'
+                }}
+                className={`scrollspy-right-box spec-table-container product-content-${product.id} w-full`} // ✅ Added 'scrollspy-right-box'
+                dangerouslySetInnerHTML={{ __html: product.long_description || "" }}
               />
             </div>
-
+            
           </div>
+
         </main>
       </div>
         <Footer />
