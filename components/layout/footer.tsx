@@ -11,7 +11,7 @@ export default function Footer() {
             <div className="flex items-center space-x-3">
               <div className="rounded-lg">
                 <Image
-                  src="/af-logo.png"  // <-- your image path here
+                  src="/af-logo-12.png"  // <-- your image path here
                   alt="AF Technologies Logo"
                   width={80}  // same as `h-8` (2rem)
                   height={80}

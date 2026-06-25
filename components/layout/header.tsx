@@ -23,25 +23,31 @@ export default function Header() {
 
   return (
     <>
-      <div className="bg-blue-900 text-white py-2 text-sm">
-        <div className="container px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-6">
+      <div className="bg-blue-900 text-white py-2.5 text-sm">
+        {/* The container transitions from stacked (flex-col) on mobile to side-by-side (md:flex-row) on desktop */}
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0">
+          {/* Contact Info Section */}
+          <div className="flex flex-col sm:flex-row items-center space-y-1.5 sm:space-y-0 sm:space-x-6 text-center">
             <div className="flex items-center space-x-2">
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 text-blue-300" />
               <span>+92-336-518240</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Mail className="h-4 w-4" />
+              <Mail className="h-4 w-4 text-blue-300" />
               <span>info@aftechnologies.pk</span>
             </div>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
-            <span>Follow Us:</span>
+
+          {/* Social Links Section (Now visible everywhere, customized for mobile spacing) */}
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <span className="text-gray-300 md:text-white text-xs md:text-sm">
+              Follow Us:
+            </span>
             <div className="flex space-x-2">
-              <Link href="#" className="hover:text-white-300">
+              <Link href="https://www.facebook.com/share/196b1ESQ7y/" className="transition-transform active:scale-95">
                 <FaFacebookF className="bg-white rounded p-1 text-gray-600 hover:text-blue-600 h-5 w-5" />
               </Link>
-              <Link href="#" className="hover:text-blue-300">
+              <Link href="https://www.instagram.com/aftechnologies2023?utm_source=qr&igsh=MXBna2xkeDJvbzVxZQ==" className="transition-transform active:scale-95">
                 <FaInstagram className="bg-white rounded p-1 text-gray-600 hover:text-pink-500 h-5 w-5" />
               </Link>
             </div>
