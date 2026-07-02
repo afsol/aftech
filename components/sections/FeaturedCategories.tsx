@@ -5,7 +5,8 @@ import axios from "@/utils/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
-const FALLBACK_IMAGE = "https://admin.aftechnologies.pk/assets/adminassests/images/image-not-found.webp";
+const FALLBACK_IMAGE =
+  "https://admin.aftechnologies.pk/assets/adminassests/images/image-not-found.webp";
 
 // ─── SUB-COMPONENT: INDIVIDUAL CATEGORY CARD ──────────────────────────────────
 function CategoryCard({ category, onClick }) {
@@ -13,7 +14,7 @@ function CategoryCard({ category, onClick }) {
   if (initialSrc.includes("https://aftechnologies.pk/storage")) {
     initialSrc = initialSrc.replace(
       "https://aftechnologies.pk/storage",
-      "https://admin.aftechnologies.pk/storage"
+      "https://admin.aftechnologies.pk/storage",
     );
   }
 
@@ -21,18 +22,22 @@ function CategoryCard({ category, onClick }) {
 
   const rawColor = category.color_code || "#2196F3";
   const isHex = rawColor.startsWith("#");
-  
-  const inlineStyle = isHex ? { backgroundColor: `${rawColor}15`, borderColor: `${rawColor}30` } : {};
-  const bgClassName = !isHex ? `bg-${rawColor}-50/50 border-${rawColor}-100` : "";
+
+  const inlineStyle = isHex
+    ? { backgroundColor: `${rawColor}15`, borderColor: `${rawColor}30` }
+    : {};
+  const bgClassName = !isHex
+    ? `bg-${rawColor}-50/50 border-${rawColor}-100`
+    : "";
 
   return (
     // 💡 Added shrink-0 and specific column sizing logic for the slider engine
-    <Card 
+    <Card
       onClick={onClick}
       className="text-center hover:shadow-lg hover:border-slate-200 transition-all duration-300 cursor-pointer group rounded-2xl border border-slate-100/80 bg-white overflow-hidden w-[calc(50vw-24px)] md:w-[calc(33.33vw-24px)] lg:w-[calc(20vw-24px)] shrink-0 mx-3"
     >
       <CardContent className="p-6 flex flex-col items-center justify-center">
-        <div 
+        <div
           style={inlineStyle}
           className={`${bgClassName} relative aspect-square w-24 h-24 mb-4 rounded-full border p-3 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 duration-300`}
         >
@@ -49,7 +54,7 @@ function CategoryCard({ category, onClick }) {
             }}
           />
         </div>
-        
+
         <h3 className="font-bold text-slate-800 line-clamp-2 capitalize text-sm tracking-tight px-1 group-hover:text-blue-600 transition-colors w-full">
           {category.title ? category.title.toLowerCase() : ""}
         </h3>
@@ -73,11 +78,13 @@ export default function FeaturedCategories() {
         if (res.data && res.data.success) {
           const payload = res.data.data;
           const itemsArray = Array.isArray(payload) ? payload : payload.data;
-          
+
           setCategories(itemsArray || []);
         }
       })
-      .catch((err) => console.error("Error pulling database featured categories:", err))
+      .catch((err) =>
+        console.error("Error pulling database featured categories:", err),
+      )
       .finally(() => setLoading(false));
   }, []);
 
@@ -85,7 +92,10 @@ export default function FeaturedCategories() {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 animate-pulse">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="border border-slate-100 rounded-2xl p-6 text-center space-y-4 bg-white">
+          <div
+            key={i}
+            className="border border-slate-100 rounded-2xl p-6 text-center space-y-4 bg-white"
+          >
             <div className="rounded-full bg-slate-200 w-24 h-24 mx-auto" />
             <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
           </div>
@@ -101,7 +111,6 @@ export default function FeaturedCategories() {
 
   return (
     <div className="w-full overflow-hidden relative py-4 mask-gradient">
-      
       {/* Inject custom infinite scroll CSS values right into Tailwind container space */}
       <style>
         {`
@@ -130,7 +139,7 @@ export default function FeaturedCategories() {
           <CategoryCard
             key={`${category.id}-${index}`}
             category={category}
-            onClick={() => router.push(`/products?category_id=${category.id}`)}
+            onClick={() => router.push(`/products?categories=${category.id}`)}
           />
         ))}
       </div>
