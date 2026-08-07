@@ -22,6 +22,7 @@ type Service = {
 
 export default function HomeServices() {
   const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // 👈 Added loading state
   const [hovered, setHovered] = useState<number | null>(null);
 
   useEffect(() => {
@@ -33,11 +34,39 @@ export default function HomeServices() {
       })
       .then((res) => {
         setServices(res.data.data);
+        setLoading(false); // 👈 Turn off loading when data arrives
       })
       .catch((err) => {
         console.error("API error:", err);
+        setLoading(false); // 👈 Turn off loading even if it fails
       });
   }, []);
+
+  // 💡 Show loading state while data is being fetched
+  if (loading) {
+    return (
+      <div className="grid md:grid-cols-2 gap-8">
+        {[1, 2].map((n) => (
+          <div
+            key={n}
+            className="h-64 rounded-xl border border-gray-200 bg-gray-50 animate-pulse p-6 flex flex-col justify-between"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+              <div className="space-y-2 flex-1">
+                <div className="h-5 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-5/6" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -78,8 +107,6 @@ export default function HomeServices() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              
-              {/* 💡 The CSS below handles list-styling AND forces fonts to match perfectly */}
               <style>
                 {`
                   .service-content-${service.id} ul {
@@ -93,15 +120,14 @@ export default function HomeServices() {
                     font-size: 1.25rem !important;
                   }
 
-                  /* 🌟 CRITICAL FIX: The !important flag strips away any sneaky database fonts */
                   .service-content-${service.id}, 
                   .service-content-${service.id} *, 
                   .service-content-${service.id} p, 
                   .service-content-${service.id} span, 
                   .service-content-${service.id} li {
                     font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-                    font-size: 0.875rem !important; /* Forces uniform text-sm size */
-                    color: #4B5563 !important;      /* Forces uniform slate-600 color */
+                    font-size: 0.875rem !important;
+                    color: #4B5563 !important;
                     line-height: 1.625 !important;
                   }
 
@@ -123,119 +149,3 @@ export default function HomeServices() {
   );
 }
 
-
-
-// "use client";
-
-// import {
-//   Card,
-//   CardHeader,
-//   CardTitle,
-//   CardDescription,
-//   CardContent,
-// } from "@/components/ui/card";
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// import * as LucideIcons from "lucide-react";
-
-// type Service = {
-//   id: number;
-//   icon_name: keyof typeof LucideIcons;
-//   icon_color: string;
-//   short_discription: string | null;
-//   tag_line: string;
-//   heading: string;
-// };
-
-// export default function HomeServices() {
-//   const [services, setServices] = useState<Service[]>([]);
-//   const [hovered, setHovered] = useState<number | null>(null);
-
-//   useEffect(() => {
-//     axios
-//       .get(`${process.env.NEXT_PUBLIC_API_URL}/services-home`, {
-//         headers: {
-//           "X-API-KEY": process.env.NEXT_PUBLIC_X_API_KEY,
-//         },
-//       })
-//       .then((res) => {
-//         setServices(res.data.data);
-//       })
-//       .catch((err) => {
-//         console.error("API error:", err);
-//       });
-//   }, []);
-
-//   return (
-//   <div className="grid md:grid-cols-2 gap-8">
-//     {services.map((service) => {
-//       const Icon =
-//         LucideIcons[service.icon_name as keyof typeof LucideIcons] ||
-//         LucideIcons.CircleHelp;
-//       const color = service.icon_color || "#2196F3";
-      
-//       const isHovered = hovered === service.id;
-
-//       return (
-//         <Card
-//           key={service.id}
-//           onMouseEnter={() => setHovered(service.id)}
-//           onMouseLeave={() => setHovered(null)}
-//           className="transition-all duration-300 border-l-4 flex flex-col justify-between bg-white"
-//           style={{ borderLeftColor: color }}
-//         >
-//           <CardHeader>
-//             <div className="flex items-center space-x-4">
-//               <div
-//                 className="p-3 rounded-lg transition-colors flex-shrink-0"
-//                 style={{
-//                   backgroundColor: isHovered ? color : `${color}20`,
-//                 }}
-//               >
-//                 <Icon
-//                   className="h-8 w-8 transition-colors"
-//                   style={{
-//                     color: isHovered ? "#ffffff" : color,
-//                   }}
-//                 />
-//               </div>
-//               <div>
-//                 {/* 💡 Explicitly declare font-sans to guarantee matching typography elements */}
-//                 <CardTitle className="text-xl font-sans font-semibold text-slate-900">
-//                   {service.heading}
-//                 </CardTitle>
-//                 <CardDescription className="font-sans text-xs text-slate-400 mt-0.5">
-//                   {service.tag_line}
-//                 </CardDescription>
-//               </div>
-//             </div>
-//           </CardHeader>
-          
-//           <CardContent className="flex-1">
-//             {/* 💡 Cleaned typography engine: handles child elements safely via tailwind configurations */}
-//             <div
-//               className="text-sm font-sans leading-relaxed text-slate-600 
-//                 [&_p]:mb-2 
-//                 [&_ul]:list-disc [&_ul]:ml-5 [&_ul]:space-y-1.5
-//                 [&_li]:text-slate-600 [&_li]:font-sans"
-//               style={{
-//                 // Explicitly tells custom list item bullets to adopt your theme database color icon natively
-//                 ['--marker-color' as any]: color 
-//               }}
-//               dangerouslySetInnerHTML={{ __html: service.short_discription || "" }}
-//             />
-//           </CardContent>
-
-//           {/* Hidden utility style block ensuring lists use the custom marker color natively without Times New Roman bugs */}
-//           <style jsx global>{`
-//             li::marker {
-//               color: var(--marker-color, #4B5563);
-//               font-size: 1.15em;
-//             }
-//           `}</style>
-//         </Card>
-//       );
-//     })}
-//   </div>
-// );
-// }

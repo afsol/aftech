@@ -68,7 +68,14 @@ function ProductCard({ product, onClick }) {
           </div>
           <div className="pt-2 border-t border-slate-50 flex items-baseline gap-2">
             <span className="text-base font-extrabold text-slate-900">
-              PKR {product.price ? Number(product.price).toLocaleString() : "0"}
+              {/* PKR {product.price ? Number(product.price).toLocaleString() : "0"} */}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+              >
+                Read More
+              </Button>
             </span>
           </div>
         </div>
