@@ -230,7 +230,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
           />
           <span className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-wide border border-slate-100 shadow-xs">
             <Tag size={10} className="text-slate-400" />
-            {product.product_category_id || "General"}
+            {product.brand_id || "Assesories"}
           </span>
         </div>
 
@@ -253,15 +253,16 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
 
           <div className="flex items-center justify-between gap-4 mt-4 sm:mt-0 pt-3 border-t border-slate-50">
             <span className="text-base font-semibold text-slate-900 tracking-tight">
-              PKR {product.price ? Number(product.price).toLocaleString() : "—"}
+              {/* PKR {product.price} */}
+              
             </span>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 w-8 rounded-full p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
               >
-                <Eye size={15} />
+                Read More
               </Button>
               {/* <Button
                 size="sm"
@@ -300,7 +301,7 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
         
         <span className="absolute top-3 left-3 flex items-center gap-1 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-full text-[9px] font-bold text-slate-600 uppercase tracking-wider border border-slate-100 shadow-xs">
           <Tag size={9} className="text-slate-400" />
-          {product.product_category_id || "General"}
+          {product.brand_id || "Assesories"}
         </span>
 
         <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-xs">
@@ -322,7 +323,14 @@ function ProductCardItem({ product, viewMode, router }: { product: Product; view
 
         <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
           <span className="text-sm font-bold text-slate-900 tracking-tight">
-            PKR {product.price ? Number(product.price).toLocaleString() : "—"}
+            {/* PKR {product.price} */}
+            <Button
+                size="sm"
+                variant="ghost"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+              >
+                Read More
+              </Button>
           </span>
           {/* <Button
             size="sm"
